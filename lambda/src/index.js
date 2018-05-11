@@ -4,14 +4,22 @@
 const Alexa = require('ask-sdk-core');
 const request = require('request');
 
-const GetAnalysisReport = (hashtag) => {
-  // request('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY', {}, (err, res, response) => {
-  //   if (err) { return console.log(err); }
-  //   return (response.message);
-  // });
+let API_ENDPOINT = 'https://lab-x2.api.com/311/v1.0/alexa';
 
-  return hashtag + ', you\'re a cunt!';
-};
+const GetAnalysisReport = (hashtag) => {
+  return new Promise((resolve, reject) => {
+    request(API_ENDPOINT, { 'hashtag': hashtag }, (err, res, response) => {
+      if (err) {
+        reject(err);
+      } else {
+        let json = JSON.parse(response);
+        console.log('response ', json);
+        resolve(`It is ${json.message}`);
+      }
+    });
+  });
+}
+
 
 /* INTENT HANDLERS */
 const LaunchRequestHandler = {
@@ -31,14 +39,16 @@ const GetSentimentHandler = {
     const request = handlerInput.requestEnvelope.request;
     return request.type === 'IntentRequest' && request.intent.name === 'SentimentIntent';
   },
-  handle(handlerInput) {
+  async handle(handlerInput) {
     const userSlot = handlerInput.requestEnvelope.request.intent.slots.Tag;
-    let twitterUsername;
+    let hashtag;
     if (userSlot && userSlot.value) {
-        twitterUsername = userSlot.value.toLowerCase();
+      hashtag = userSlot.value.toLowerCase();
+      console.log('hashtag2 ' + hashtag);
     }
 
-    const analysisReport = GetAnalysisReport(twitterUsername);
+    const analysisReport = await GetAnalysisReport(hashtag);
+    console.log('analysisReport ' + analysisReport);
     const speechOutput = GET_SENTIMENT_MESSAGE + analysisReport;
 
     return handlerInput.responseBuilder
@@ -120,7 +130,7 @@ const ErrorHandler = {
 };
 
 const SKILL_NAME = 'Twitter Sentiment Analysis';
-const WELCOME_MESSAGE = 'Welcome to ' + SKILL_NAME + '. To start, you can say analyse jinglebells hashtag';
+const WELCOME_MESSAGE = 'Welcome to ' + SKILL_NAME + '. To start, you can say analyse amazon hashtag';
 const WELCOME_REPROMPT = 'For instructions on what you can say, please say help me.';
 const GET_SENTIMENT_MESSAGE = 'Analysis result is: ';
 const HELP_MESSAGE = 'To start, you can say analyse jinglebells hashtag';
@@ -133,12 +143,12 @@ const skillBuilder = Alexa.SkillBuilders.custom();
 
 exports.handler = skillBuilder
   .addRequestHandlers(
-    LaunchRequestHandler,
-    GetSentimentHandler,
-    HelpHandler,
-    ExitHandler,
-    // FallbackHandler,
-    SessionEndedRequestHandler
+  LaunchRequestHandler,
+  GetSentimentHandler,
+  HelpHandler,
+  ExitHandler,
+  // FallbackHandler,
+  SessionEndedRequestHandler
   )
   .addErrorHandlers(ErrorHandler)
   .lambda();

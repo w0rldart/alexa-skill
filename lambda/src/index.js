@@ -13,13 +13,11 @@ const GetAnalysisReport = (hashtag) => {
         reject(err);
       } else {
         let json = JSON.parse(response);
-        console.log('response ', json);
         resolve(`It is ${json.message}`);
       }
     });
   });
 }
-
 
 /* INTENT HANDLERS */
 const LaunchRequestHandler = {
@@ -48,7 +46,6 @@ const GetSentimentHandler = {
     }
 
     const analysisReport = await GetAnalysisReport(hashtag);
-    console.log('analysisReport ' + analysisReport);
     const speechOutput = GET_SENTIMENT_MESSAGE + analysisReport;
 
     return handlerInput.responseBuilder
@@ -71,23 +68,6 @@ const HelpHandler = {
       .getResponse();
   },
 };
-
-// const FallbackHandler = {
-//   // 2018-May-01: AMAZON.FallackIntent is only currently available in en-US locale.
-//   //              This handler will not be triggered except in that locale, so it can be
-//   //              safely deployed for any locale.
-//   canHandle(handlerInput) {
-//     const request = handlerInput.requestEnvelope.request;
-//     return request.type === 'IntentRequest'
-//       && request.intent.name === 'AMAZON.FallbackIntent';
-//   },
-//   handle(handlerInput) {
-//     return handlerInput.responseBuilder
-//       .speak(FALLBACK_MESSAGE)
-//       .reprompt(FALLBACK_REPROMPT)
-//       .getResponse();
-//   },
-// };
 
 const ExitHandler = {
   canHandle(handlerInput) {
@@ -135,8 +115,6 @@ const WELCOME_REPROMPT = 'For instructions on what you can say, please say help 
 const GET_SENTIMENT_MESSAGE = 'Analysis result is: ';
 const HELP_MESSAGE = 'To start, you can say analyse jinglebells hashtag';
 const HELP_REPROMPT = 'You can say things like, analyse jinglebells hashtag, or you can say exit...Now, what can I help you with?';
-// const FALLBACK_MESSAGE = 'The Space Facts skill can\'t help you with that. It can help you discover facts about space if you say tell me a space fact. What can I help you with?';
-// const FALLBACK_REPROMPT = 'What can I help you with?';
 const STOP_MESSAGE = 'Goodbye!';
 
 const skillBuilder = Alexa.SkillBuilders.custom();
@@ -147,7 +125,6 @@ exports.handler = skillBuilder
   GetSentimentHandler,
   HelpHandler,
   ExitHandler,
-  // FallbackHandler,
   SessionEndedRequestHandler
   )
   .addErrorHandlers(ErrorHandler)
